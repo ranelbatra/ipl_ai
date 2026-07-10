@@ -1,0 +1,68 @@
+.page-header{
+    margin-bottom:30px;
+}
+
+.page-header p{
+    color:#666;
+    margin-top:8px;
+}
+
+.table-card{
+    background:white;
+    padding:25px;
+    border-radius:18px;
+    box-shadow:0 10px 20px rgba(0,0,0,.08);
+    overflow-x:auto;
+}
+
+.venue-grid,
+.team-grid,
+.player-grid,
+.stats-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+    gap:20px;
+}
+
+.venue-card,
+.team-card,
+.player-card,
+.stat-card{
+    background:white;
+    padding:25px;
+    border-radius:18px;
+    box-shadow:0 10px 20px rgba(0,0,0,.08);
+    transition:.3s;
+}
+
+.venue-card:hover,
+.team-card:hover,
+.player-card:hover,
+.stat-card:hover{
+    transform:translateY(-6px);
+}
+
+.progress-section{
+    margin-top:30px;
+    background:white;
+    padding:25px;
+    border-radius:18px;
+    box-shadow:0 10px 20px rgba(0,0,0,.08);
+}
+
+.progress-item{
+    margin:20px 0;
+}
+
+.progress{
+    height:12px;
+    background:#ddd;
+    border-radius:10px;
+    overflow:hidden;
+    margin-top:8px;
+}
+
+.bar{
+    height:100%;
+    background:#556B2F;
+}
