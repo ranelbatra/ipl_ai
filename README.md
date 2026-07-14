@@ -257,6 +257,7 @@ Verify:
 python --version
 node --version
 npm --version
+```
 
 ---
 
