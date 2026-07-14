@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from ai_engine import generate_report
+from backend.ai.ai_engine import generate_report
 
 app = FastAPI()
 
