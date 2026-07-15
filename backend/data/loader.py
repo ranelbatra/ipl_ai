@@ -1,19 +1,40 @@
 import pandas as pd
 import os
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+from pathlib import Path
 
-CSV_PATH = os.path.join(BASE_DIR, "IPL_matches.csv")
+BASE_DIR = Path(__file__).resolve().parent.parent
+CSV_PATH = BASE_DIR / "IPL_matches.csv"
 
 _df = pd.read_csv(CSV_PATH)
+
+REQUIRED_COLUMNS = [
+    "match_id",
+    "date",
+    "season",
+    "venue",
+    "team_1",
+    "team_2",
+    "winner",
+    "player_of_match"
+]
+
+missing = [col for col in REQUIRED_COLUMNS if col not in _df.columns]
+
+if missing:
+    raise ValueError(f"Missing required columns: {missing}")
 
 
 # --------------------------------------------------------
 # Return complete dataframe
 # --------------------------------------------------------
 
-def load_data():
+def get_all_matches():
     return _df
+
+
+def load_data():
+    return get_all_matches()
 
 
 # --------------------------------------------------------

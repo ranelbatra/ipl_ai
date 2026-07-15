@@ -1,48 +1,48 @@
-from transformers import AutoTokenizer, AutoModelForCausalLM
-import torch
+import os
+from dotenv import load_dotenv
+from huggingface_hub import InferenceClient
 
 from .analytics import match_summary
 from .momentum import detect_momentum
 from .evidence import build_evidence
 from .prompts import SYSTEM_PROMPT
 
-
 # ----------------------------------------------------
-# LOAD MODEL ONLY ONCE
+# Load Environment Variables
 # ----------------------------------------------------
 
-MODEL_NAME = "Qwen/Qwen2.5-0.5B-Instruct"
+load_dotenv()
 
-print("Loading IPL Detective AI...")
+MODEL_NAME = os.environ.get("HF_MODEL", "Qwen/Qwen2.5-7B-Instruct")
 
-tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-
-model = AutoModelForCausalLM.from_pretrained(
-    MODEL_NAME,
-    torch_dtype="auto",
-    device_map="auto"
+HF_TOKEN = (
+    os.environ.get("HF_TOKEN")
+    or os.environ.get("HUGGINGFACEHUB_API_TOKEN")
 )
 
-print("AI Detective Ready!")
+if not HF_TOKEN:
+    raise RuntimeError(
+        "HF_TOKEN is not set. Export your Hugging Face token before starting the server."
+    )
 
+client = InferenceClient(
+    model=MODEL_NAME,
+    token=HF_TOKEN
+)
 
 # ----------------------------------------------------
-# Build Facts
+# Build Case File
 # ----------------------------------------------------
 
 def build_case_file(match):
 
     analytics = match_summary(match)
-
     momentum = detect_momentum(match)
-
     evidence = build_evidence(match)
 
     facts = f"""
 ================================================
-
 MATCH DETAILS
-
 ================================================
 
 Match:
@@ -63,39 +63,30 @@ Result:
 Toss:
 {match["toss"]}
 
-Player of Match:
+Player of the Match:
 {match["player_of_match"]}
 
 ------------------------------------------------
-
 PHASE SCORES
-
 ------------------------------------------------
 
 Powerplay
-
 {match["powerplay"]}
 
 Middle Overs
-
 {match["middle"]}
 
 Death Overs
-
 {match["death"]}
 
 ------------------------------------------------
-
 ANALYTICS
-
 ------------------------------------------------
 
 {analytics}
 
 ------------------------------------------------
-
 MOMENTUM
-
 ------------------------------------------------
 
 Prime Suspect:
@@ -114,101 +105,45 @@ Reason:
 {momentum["reason"]}
 
 ------------------------------------------------
-
 EVIDENCE
-
 ------------------------------------------------
 """
 
     for item in evidence:
-
         facts += f"\n• {item}"
 
     return facts
 
 
 # ----------------------------------------------------
-# Ask Qwen
-# ----------------------------------------------------
-
-def ask_qwen(case_file):
-
-    messages = [
-
-        {
-            "role": "system",
-            "content": SYSTEM_PROMPT
-        },
-
-        {
-            "role": "user",
-            "content": case_file
-        }
-
-    ]
-
-    prompt = tokenizer.apply_chat_template(
-
-        messages,
-
-        tokenize=False,
-
-        add_generation_prompt=True
-
-    )
-
-    inputs = tokenizer(
-
-        prompt,
-
-        return_tensors="pt"
-
-    ).to(model.device)
-
-    outputs = model.generate(
-
-        **inputs,
-
-        max_new_tokens=700,
-
-        temperature=0.35,
-
-        top_p=0.90,
-
-        do_sample=True,
-
-        repetition_penalty=1.12
-
-    )
-
-    answer = tokenizer.decode(
-
-        outputs[0][inputs.input_ids.shape[1]:],
-
-        skip_special_tokens=True
-
-    )
-
-    return answer
-
-
-# ----------------------------------------------------
-# Main Function
+# Generate AI Detective Report
 # ----------------------------------------------------
 
 def generate_report(match):
 
     case_file = build_case_file(match)
 
-    report = ask_qwen(case_file)
+    messages = [
+        {
+            "role": "system",
+            "content": SYSTEM_PROMPT
+        },
+        {
+            "role": "user",
+            "content": case_file
+        }
+    ]
 
-    return {
+    completion = client.chat_completion(
+        messages=messages,
+        max_tokens=900,
+        temperature=0.3,
+        top_p=0.9
+    )
 
-        "summary": report,
+    report = completion.choices[0].message.content
 
-        "case_file": case_file
-
-    }
+    return report
 
 
 # ----------------------------------------------------
@@ -218,31 +153,19 @@ def generate_report(match):
 if __name__ == "__main__":
 
     sample = {
-
-        "match":"RCB vs PBKS",
-
-        "venue":"M Chinnaswamy Stadium",
-
-        "date":"18 April 2025",
-
-        "winner":"Punjab Kings",
-
-        "result":"Punjab Kings won by 6 wickets",
-
-        "toss":"RCB elected to field",
-
-        "player_of_match":"Shreyas Iyer",
-
-        "powerplay":"RCB:42/1, PBKS:61/0",
-
-        "middle":"RCB:71/5, PBKS:89/2",
-
-        "death":"RCB:48/3, PBKS:54/1",
-
-        "rrr":"8.75 rpo"
-
+        "match": "RCB vs PBKS",
+        "venue": "M Chinnaswamy Stadium",
+        "date": "18 April 2025",
+        "winner": "Punjab Kings",
+        "result": "Punjab Kings won by 6 wickets",
+        "toss": "RCB elected to field",
+        "player_of_match": "Shreyas Iyer",
+        "powerplay": "RCB:42/1, PBKS:61/0",
+        "middle": "RCB:71/5, PBKS:89/2",
+        "death": "RCB:48/3, PBKS:54/1",
+        "rrr": "8.75 rpo"
     }
 
-    result = generate_report(sample)
+    report = generate_report(sample)
 
-    print(result["summary"])
+    print(report)

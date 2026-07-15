@@ -2,6 +2,7 @@ import streamlit as st
 from streamlit_option_menu import option_menu
 import streamlit.components.v1 as components
 from ai.ai_engine import generate_report
+import traceback
 
 st.set_page_config(layout="wide")
 
@@ -10955,9 +10956,9 @@ elif selected == "Matches":
     </div>
 
     <div class="match-info">
-        📅 {match['date']}<br>
-        📍 {match['venue']}<br>
-        🏆 {match['winner']}
+        <b>Date: </b> {match['date']}<br>
+        <b>Venue: </b> {match['venue']}<br>
+        <b>Winner: </b> {match['winner']}
     </div>
 
 </div>
@@ -11036,7 +11037,7 @@ elif selected == "Venues":
     "city": "Bengaluru",
     "matches": "95+",
     "capacity": "40,000",
-    "image": "https://upload.wikimedia.org/wikipedia/commons/8/8f/M._Chinnaswamy_Stadium.jpg"
+    "image": "https://static.vecteezy.com/system/resources/previews/075/244/946/non_2x/royal-challengers-bengaluru-logo-rcb-logo-icon-on-transparent-background-free-png.png"
 },
 
 {
@@ -11044,7 +11045,7 @@ elif selected == "Venues":
     "city": "Mumbai",
     "matches": "115+",
     "capacity": "33,000",
-    "image": "https://upload.wikimedia.org/wikipedia/commons/8/84/Wankhede_Stadium%2C_Mumbai.jpg"
+    "image": "https://static.vecteezy.com/system/resources/previews/075/244/951/non_2x/mumbai-indians-logo-mi-logo-icon-on-transparent-background-free-png.png"
 },
 
 {
@@ -11052,7 +11053,7 @@ elif selected == "Venues":
     "city": "Kolkata",
     "matches": "93+",
     "capacity": "68,000",
-    "image": "https://upload.wikimedia.org/wikipedia/commons/7/7d/Eden_Gardens_under_floodlights.jpg"
+    "image": "https://static.vecteezy.com/system/resources/previews/075/244/950/non_2x/kolkata-knight-riders-logo-kkr-logo-icon-on-transparent-background-free-png.png"
 },
 
 {
@@ -11060,7 +11061,7 @@ elif selected == "Venues":
     "city": "Chennai",
     "matches": "81+",
     "capacity": "50,000",
-    "image": "https://upload.wikimedia.org/wikipedia/commons/0/0e/MA_Chidambaram_Stadium.jpg"
+    "image": "https://static.vecteezy.com/system/resources/previews/075/244/942/non_2x/chennai-super-kings-logo-csk-logo-icon-on-transparent-background-free-png.png"
 },
 
 {
@@ -11068,7 +11069,7 @@ elif selected == "Venues":
     "city": "New Delhi",
     "matches": "84+",
     "capacity": "55,000",
-    "image": "https://upload.wikimedia.org/wikipedia/commons/f/f5/Arun_Jaitley_Stadium.jpg"
+    "image": "https://static.vecteezy.com/system/resources/previews/075/252/975/non_2x/delhi-capitals-logo-dc-logo-icon-on-transparent-background-free-png.png"
 },
 
 {
@@ -11076,7 +11077,7 @@ elif selected == "Venues":
     "city": "Hyderabad",
     "matches": "71+",
     "capacity": "55,000",
-    "image": "https://upload.wikimedia.org/wikipedia/commons/2/24/Rajiv_Gandhi_International_Cricket_Stadium.jpg"
+    "image": "https://static.vecteezy.com/system/resources/previews/075/244/941/non_2x/sunrisers-hyderabad-logo-srh-logo-icon-on-transparent-background-free-png.png"
 },
 
 {
@@ -11084,7 +11085,7 @@ elif selected == "Venues":
     "city": "Jaipur",
     "matches": "57+",
     "capacity": "30,000",
-    "image": "https://upload.wikimedia.org/wikipedia/commons/5/5b/Sawai_Mansingh_Stadium.jpg"
+    "image": "https://static.vecteezy.com/system/resources/previews/075/244/952/non_2x/rajasthan-royals-logo-rr-logo-icon-on-transparent-background-free-png.png"
 },
 
 {
@@ -11092,7 +11093,7 @@ elif selected == "Venues":
     "city": "Ahmedabad",
     "matches": "35+",
     "capacity": "132,000",
-    "image": "https://upload.wikimedia.org/wikipedia/commons/4/49/Narendra_Modi_Stadium.jpg"
+    "image": "https://static.vecteezy.com/system/resources/previews/075/244/947/non_2x/gujarat-titans-logo-gt-logo-icon-on-transparent-background-free-png.png"
 },
 
 {
@@ -11100,7 +11101,7 @@ elif selected == "Venues":
     "city": "Lucknow",
     "matches": "21+",
     "capacity": "50,000",
-    "image": "https://upload.wikimedia.org/wikipedia/commons/9/9c/Ekana_Cricket_Stadium.jpg"
+    "image": "https://static.vecteezy.com/system/resources/previews/075/244/945/non_2x/lucknow-super-giants-logo-lsg-logo-icon-on-transparent-background-free-png.png"
 },
 
 {
@@ -11108,7 +11109,7 @@ elif selected == "Venues":
     "city": "Mullanpur",
     "matches": "16+",
     "capacity": "38,000",
-    "image": "https://upload.wikimedia.org/wikipedia/commons/5/5d/Maharaja_Yadavindra_Singh_International_Cricket_Stadium.jpg"
+    "image": "https://static.vecteezy.com/system/resources/previews/075/244/949/non_2x/punjab-kings-logo-pbks-logo-icon-on-transparent-background-free-png.png"
 },
 
     ]
@@ -11123,7 +11124,7 @@ elif selected == "Venues":
 
                 st.markdown(f"""
 <div class="venue-card">
-
+<img class="venue-img" src="{venue['image']}" />
 <div class="venue-name">
 {venue['name']}
 </div>
@@ -11339,7 +11340,7 @@ elif selected == "Statistics":
 
 elif selected == "AI Detective":
 
-    from csv_loader import (
+    from backend.data.loader import (
         get_all_seasons,
         get_matches,
         get_match_details
@@ -11449,17 +11450,96 @@ elif selected == "AI Detective":
         line-height:1.8;
 
     }
+                
+    .label-name{
+        font-size:26px;
+        font-weight:bold;
+        color:#222;
+        font-family:Georgia;
+        line-height:1.2;
+        margin-bottom:12px;
+    }
+                
+    .selector-title{
+
+    font-size:26px;
+
+    font-weight:bold;
+
+    color:#222;
+
+    font-family:Georgia;
+
+    line-height:1.2;
+
+    margin-bottom:12px;
+
+}
+                
+    /* Selectbox container */
+div[data-baseweb="select"] > div {
+
+    background-color: #FCFAF2 !important;
+
+    border: 2px solid #556B2F !important;
+
+    border-radius: 12px !important;
+
+    font-family: Georgia !important;
+
+    font-size: 18px !important;
+
+    color: #222 !important;
+
+}
+
+/* Selected value */
+div[data-baseweb="select"] span {
+
+    font-family: Georgia !important;
+
+    font-size: 18px !important;
+
+    color: #222 !important;
+
+}
+
+/* Dropdown arrow */
+div[data-baseweb="select"] svg {
+
+    color: #556B2F !important;
+
+}
+                
+    ul[role="listbox"] {
+
+    font-family: Georgia !important;
+
+    font-size: 17px !important;
+
+    background-color: #FCFAF2 !important;
+
+}
+
+ul[role="listbox"] li {
+
+    color: #222 !important;
+
+    padding: 10px !important;
+
+}
+
+ul[role="listbox"] li:hover {
+
+    background-color: #E8F0E6 !important;
+
+}
 
     </style>
     """, unsafe_allow_html=True)
 
     st.markdown(
-        '<div class="title">🕵 IPL AI Detective</div>',
-        unsafe_allow_html=True
-    )
-
-    st.markdown(
-        '<div class="subtitle">Investigate any IPL match using AI.</div>',
+        '<div class="title"><h1 style="font-family:Montserrat;font-size:70px;">IPL AI Detective</h1></div>',
         unsafe_allow_html=True
     )
 
@@ -11473,83 +11553,146 @@ elif selected == "AI Detective":
 
     with left:
 
+        st.markdown(
+        """
+        <div class="selector-title">
+            Select IPL Season
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
         season = st.selectbox(
 
-            "📅 Select IPL Season",
+        "",
 
-            seasons
+        seasons,
 
-        )
+        label_visibility="collapsed"
+
+    )
 
     matches = get_matches(season)
 
     with right:
 
-        match = st.selectbox(
-
-            "🏏 Select Match",
-
-            matches
-
-        )
-
-    selected_match = get_match_details(
-
-        season,
-
-        match
-
+        st.markdown(
+        """
+        <div class="selector-title">
+            Select Match
+        </div>
+        """,
+        unsafe_allow_html=True
     )
+
+        selected_match_name = st.selectbox(
+
+    "",
+
+    matches,
+
+    label_visibility="collapsed"
+
+)
+
+        selected_match = get_match_details(
+
+    season,
+
+    selected_match_name
+
+)
 
     st.write("")
 
     st.markdown(
-        '<div class="section-heading">📂 Match Dossier</div>',
-        unsafe_allow_html=True
+    '<div class="section-heading">📂 Match Dossier</div>',
+    unsafe_allow_html=True
+)
+
+    c1, c2, c3, c4 = st.columns(4)
+
+    with c1:
+
+        st.metric(
+        "🏆 Winner",
+        selected_match["winner"]
     )
 
-    st.markdown(f"""
+    with c2:
 
-    <div class="summary-card">
+        st.metric(
+        "⭐ Player of Match",
+        selected_match["player_of_match"]
+    )
 
-    <b>🏏 Match</b><br>
-    {selected_match["match"]}
+    with c3:
 
-    <br>
+        st.metric(
+        "🏟 Venue",
+        selected_match["venue"]
+    )
 
-    <b>📅 Date</b><br>
-    {selected_match["date"]}
+    with c4:
 
-    <br>
-
-    <b>🏟 Venue</b><br>
-    {selected_match["venue"]}
-
-    <br>
-
-    <b>🌆 City</b><br>
-    {selected_match["city"]}
-
-    <br>
-
-    <b>🪙 Toss</b><br>
-    {selected_match["toss"]}
-
-    <br>
-
-    <b>🏆 Winner</b><br>
-    {selected_match["winner"]}
-
-    <br>
-
-    <b>⭐ Player of Match</b><br>
-    {selected_match["player_of_match"]}
-
-    </div>
-
-    """, unsafe_allow_html=True)
+        st.metric(
+        "📅 Date",
+        str(selected_match["date"])
+    )
 
     st.write("")
+
+    c5, c6 = st.columns(2)
+
+    with c5:
+
+        st.info(
+        f"""
+**🪙 Toss**
+
+    {selected_match["toss"]}
+"""
+    )
+
+    with c6:
+
+        st.success(
+        f"""
+**🏏 Match**
+
+    {selected_match["match"]}
+"""
+    )
+
+    st.write("")
+
+    left, right = st.columns([3, 1])
+
+    with left:
+
+            st.success(
+        f"""
+### 🟢 CASE OPENED
+
+**Match:** {selected_match["match"]}
+
+**Winner:** {selected_match["winner"]}
+
+**Investigation Status:** Ready
+"""
+    )
+
+    with right:
+
+        st.metric(
+
+        "Evidence",
+
+        "Pending",
+
+        "📂"
+
+    )
 
     st.markdown(
         '<div class="section-heading">📊 Match Phase Details</div>',
@@ -11656,9 +11799,7 @@ elif selected == "AI Detective":
 
         try:
 
-            result = generate_report(selected_match)
-
-            ai_report = result["summary"]
+            ai_report = generate_report(selected_match)
 
             st.markdown(
                 '<div class="section-heading">🕵 AI Detective Report</div>',
@@ -11679,8 +11820,5 @@ elif selected == "AI Detective":
 
             """, unsafe_allow_html=True)
 
-        except Exception as e:
-
-            st.error("The AI Detective could not complete the investigation.")
-
-            st.code(str(e))
+        except Exception:
+            st.exception(Exception(traceback.format_exc()))
