@@ -27,7 +27,8 @@ selected = option_menu(
         "Matches",
         "Venues",
         "Statistics",
-        "AI Detective"
+        "AI Detective",
+        "Match Aura"
     ],
     icons=[
         "house",
@@ -11340,7 +11341,7 @@ elif selected == "Statistics":
 
 elif selected == "AI Detective":
 
-    from backend.data.loader import (
+    from data.loader import (
         get_all_seasons,
         get_matches,
         get_match_details
@@ -11822,3 +11823,209 @@ ul[role="listbox"] li:hover {
 
         except Exception:
             st.exception(Exception(traceback.format_exc()))
+
+elif selected == "Match Aura":
+
+    from data.loader import (
+        get_all_seasons,
+        get_matches,
+        get_match_details,
+        get_match_deliveries
+    )
+
+    from match_aura.aura_engine import MatchAuraEngine
+
+    st.markdown(
+        """
+        <h1 style='
+                   color:#556B2F;
+                   font-size:60px;
+                   font-family:Montserrat;'>
+        Match Aura
+        </h1>
+        """,
+        unsafe_allow_html=True
+    )
+
+    st.write("")
+
+    # ==========================================
+    # SELECT MATCH
+    # ==========================================
+
+    seasons = get_all_seasons()
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+
+        st.subheader("Season")
+
+        season = st.selectbox(
+            "Select Season",
+            seasons,
+            label_visibility="collapsed"
+        )
+
+    matches = get_matches(season)
+
+    with col2:
+
+        st.subheader("Match")
+
+        selected_match = st.selectbox(
+            "Select Match",
+            matches,
+            label_visibility="collapsed"
+        )
+
+    # ==========================================
+    # LOAD MATCH
+    # ==========================================
+
+    match_details = get_match_details(
+        season,
+        selected_match
+    )
+
+    deliveries = get_match_deliveries(
+        match_details["match_id"]
+    )
+
+    # ==========================================
+    # GENERATE MATCH AURA
+    # ==========================================
+
+    engine = MatchAuraEngine(deliveries)
+
+    aura = engine.generate()
+
+    team1_name = match_details["team1"]
+    team2_name = match_details["team2"]
+
+    signature_moment = (
+    aura.signature_moment
+    .replace("Team 1", team1_name)
+    .replace("Team 2", team2_name)
+)
+
+    timeline = aura.momentum_timeline
+
+    phase = timeline["phase_winners"]
+
+    powerplay = phase["powerplay"].replace("Team 1", team1_name).replace("Team 2", team2_name)
+    middle = phase["middle"].replace("Team 1", team1_name).replace("Team 2", team2_name)
+    death = phase["death"].replace("Team 1", team1_name).replace("Team 2", team2_name)
+    dominating = timeline["dominating_team"].replace("Team 1", team1_name).replace("Team 2", team2_name)
+
+    st.divider()
+
+    st.subheader("🏏 Match")
+
+    st.write(
+        f"**{match_details['team1']} vs {match_details['team2']}**"
+    )
+
+    st.write(f"Winner: **{match_details['winner']}**")
+
+    st.write(f"Venue: **{match_details['venue']}**")
+
+    st.divider()
+
+    # ==========================================
+    # METRICS
+    # ==========================================
+
+    c1, c2, c3 = st.columns(3)
+
+    with c1:
+
+        st.metric(
+            "Aura Score",
+            aura.aura_score
+        )
+
+    with c2:
+
+        st.metric(
+            "Battle Meter",
+            aura.battle_meter
+        )
+
+    with c3:
+
+        st.metric(
+            "Hype Meter",
+            aura.hype_meter
+        )
+
+    st.divider()
+
+    st.subheader("🎭 Match Personality")
+
+    st.success(aura.personality)
+
+    st.divider()
+
+    st.subheader("📈 Momentum Timeline")
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.metric("⚡ Powerplay", powerplay)
+
+    with col2:
+        st.metric("🏏 Middle Overs", middle)
+
+    with col3:
+        st.metric("💥 Death Overs", death)
+
+    st.write("")
+
+    c1, c2 = st.columns(2)
+
+    with c1:
+        st.metric(
+        "🔄 Momentum Swings",
+        timeline["momentum_swings"]
+    )
+
+    with c2:
+        st.metric(
+        "👑 Dominating Team",
+        dominating
+    )
+
+    st.divider()
+
+    st.subheader("🌪 Plot Twists")
+
+    for event in aura.plot_twists:
+
+        st.write("•", event)
+
+    st.divider()
+
+    st.subheader("🏅 Achievements")
+
+    for achievement in aura.achievements:
+
+        st.success(achievement)
+
+    st.divider()
+
+    st.subheader("⭐ Signature Moment")
+
+    st.info(signature_moment)
+
+    st.divider()
+
+    st.subheader("🤖 AI Verdict")
+
+    st.write(aura.ai_verdict)
+
+    st.divider()
+
+    st.subheader("🏁 Ending")
+
+    st.write(aura.ending)

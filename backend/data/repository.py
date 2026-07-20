@@ -8,8 +8,8 @@ def get_matches_by_team(team):
     df = get_all_matches()
 
     return df[
-        (df["team_1"] == team) |
-        (df["team_2"] == team)
+        (df["team1"] == team) |
+        (df["team2"] == team)
     ]
 
 
@@ -47,7 +47,7 @@ def get_all_teams():
     df = get_all_matches()
 
     teams = sorted(
-        set(df["team_1"]).union(df["team_2"])
+        set(df["team1"]).union(df["team2"])
     )
 
     return teams

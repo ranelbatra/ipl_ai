@@ -2,6 +2,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from backend.ai.ai_engine import generate_report
+from backend.loader import get_match_deliveries
+from backend.match_aura.aura_engine import MatchAuraEngine
 
 app = FastAPI()
 
@@ -48,6 +50,31 @@ def investigate_match(request: MatchRequest):
         }
 
     except Exception as e:
+        return {
+            "error": str(e)
+        }
+
+@app.get("/match-aura/{match_id}")
+def get_match_aura(match_id: int):
+
+    try:
+
+        deliveries = get_match_deliveries(match_id)
+
+        if deliveries.empty:
+
+            return {
+                "error": "Match not found."
+            }
+
+        engine = MatchAuraEngine(deliveries)
+
+        aura = engine.generate()
+
+        return aura.model_dump()
+
+    except Exception as e:
+
         return {
             "error": str(e)
         }
