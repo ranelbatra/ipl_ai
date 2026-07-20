@@ -1,4 +1,4 @@
-match_id,date,event_name,match_type,gender,season,venue,city,team_1,team_2,toss_winner,toss_decision,winner,player_of_match
+match_id,date,event_name,match_type,gender,season,venue,city,team1,team2,toss_winner,toss_decision,winner,player_of_match
 335982,18-04-2008,Indian Premier League,T20,male,2007/08,M Chinnaswamy Stadium,Bangalore,Royal Challengers Bangalore,Kolkata Knight Riders,Royal Challengers Bangalore,field,Kolkata Knight Riders,BB McCullum
 335983,19-04-2008,Indian Premier League,T20,male,2007/08,"Punjab Cricket Association Stadium, Mohali",Chandigarh,Kings XI Punjab,Chennai Super Kings,Chennai Super Kings,bat,Chennai Super Kings,MEK Hussey
 335984,19-04-2008,Indian Premier League,T20,male,2007/08,Feroz Shah Kotla,Delhi,Delhi Daredevils,Rajasthan Royals,Rajasthan Royals,bat,Delhi Daredevils,MF Maharoof
