@@ -1,32 +1,30 @@
+"""
+Pydantic model for Match Aura
+"""
+
 from pydantic import BaseModel
-from typing import Dict, Any, List
 
 
 class MatchAura(BaseModel):
-    # Overall score (0-100)
+
     aura_score: int
 
-    # Match identity
     personality: str
 
-    # Core meters
     battle_meter: int
+
     hype_meter: int
 
-    # Momentum by phase
-    momentum_timeline: Dict[str, Any]
+    drama_score: int
 
-    # Interesting events
-    plot_twists: List[str]
+    momentum_timeline: dict
 
-    # Gamification
-    achievements: List[str]
+    plot_twists: list
 
-    # Highlight
+    achievements: list
+
     signature_moment: str
 
-    # AI summary (placeholder for Sprint 2)
     ai_verdict: str
 
-    # Final feeling of the match
     ending: str

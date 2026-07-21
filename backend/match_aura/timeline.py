@@ -1,84 +1,199 @@
 """
-Momentum Timeline
------------------
-Determines which team controlled each phase of the match.
+Timeline Builder
+----------------
+Creates a complete over-by-over analytics timeline.
+This timeline becomes the single source of truth for:
+- Match Aura
+- AI Detective
+- AI Documentary Generator
 """
 
-
-def phase_winner(team1_runs, team2_runs):
-    """
-    Returns the team that dominated a phase.
-    """
-
-    if team1_runs > team2_runs:
-        return "Team 1"
-
-    elif team2_runs > team1_runs:
-        return "Team 2"
-
-    return "Balanced"
+import pandas as pd
 
 
-def generate_momentum_timeline(
-    team1_name,
-    team2_name,
-    powerplay,
-    middle_overs,
-    death_overs,
-):
-    """
-    powerplay = (team1_runs, team2_runs)
-    middle_overs = (team1_runs, team2_runs)
-    death_overs = (team1_runs, team2_runs)
+class TimelineBuilder:
 
-    Returns a timeline showing control in each phase.
-    """
+    def __init__(self, deliveries):
 
-    timeline = []
+        self.df = deliveries.sort_values(
+            ["innings", "over", "ball"]
+        ).copy()
 
-    # -----------------------------
-    # Powerplay
-    # -----------------------------
+    # =====================================================
+    # Phase Detector
+    # =====================================================
 
-    winner = phase_winner(powerplay[0], powerplay[1])
+    @staticmethod
+    def get_phase(over):
 
-    if winner == "Team 1":
-        timeline.append(f"⚡ Powerplay: {team1_name}")
+        if over <= 6:
+            return "Powerplay"
 
-    elif winner == "Team 2":
-        timeline.append(f"⚡ Powerplay: {team2_name}")
+        elif over <= 15:
+            return "Middle Overs"
 
-    else:
-        timeline.append("⚡ Powerplay: Balanced")
+        return "Death Overs"
 
-    # -----------------------------
-    # Middle Overs
-    # -----------------------------
+    # =====================================================
+    # Build Timeline
+    # =====================================================
 
-    winner = phase_winner(middle_overs[0], middle_overs[1])
+    def build(self):
 
-    if winner == "Team 1":
-        timeline.append(f"🎯 Middle Overs: {team1_name}")
+        timeline = []
 
-    elif winner == "Team 2":
-        timeline.append(f"🎯 Middle Overs: {team2_name}")
+        grouped = self.df.groupby(
+            ["innings", "over"],
+            sort=True
+        )
 
-    else:
-        timeline.append("🎯 Middle Overs: Balanced")
+        cumulative_runs = {}
+        cumulative_wickets = {}
 
-    # -----------------------------
-    # Death Overs
-    # -----------------------------
+        for (innings, over), data in grouped:
 
-    winner = phase_winner(death_overs[0], death_overs[1])
+            team = data["team"].iloc[0]
 
-    if winner == "Team 1":
-        timeline.append(f"🔥 Death Overs: {team1_name}")
+            if innings not in cumulative_runs:
 
-    elif winner == "Team 2":
-        timeline.append(f"🔥 Death Overs: {team2_name}")
+                cumulative_runs[innings] = 0
+                cumulative_wickets[innings] = 0
 
-    else:
-        timeline.append("🔥 Death Overs: Balanced")
+            # -----------------------------------------
+            # Over Statistics
+            # -----------------------------------------
 
-    return timeline
+            runs = int(
+                data["runs_total"].sum()
+            )
+
+            wickets = int(
+                data["wicket"].sum()
+            )
+
+            boundaries = int(
+                (data["runs_batter"] == 4).sum()
+            )
+
+            sixes = int(
+                (data["runs_batter"] == 6).sum()
+            )
+
+            dot_balls = int(
+                (data["runs_total"] == 0).sum()
+            )
+
+            extras = int(
+                data["runs_extras"].sum()
+            )
+
+            balls = len(data)
+
+            # -----------------------------------------
+            # Running Totals
+            # -----------------------------------------
+
+            cumulative_runs[innings] += runs
+            cumulative_wickets[innings] += wickets
+
+            overs_completed = over
+
+            run_rate = round(
+                cumulative_runs[innings] / overs_completed,
+                2
+            )
+
+            # -----------------------------------------
+            # Momentum Score
+            # -----------------------------------------
+
+            momentum = runs
+
+            momentum += boundaries * 2
+
+            momentum += sixes * 3
+
+            momentum -= wickets * 5
+
+            # -----------------------------------------
+            # Flags
+            # -----------------------------------------
+
+            explosive = runs >= 18
+
+            pressure = runs <= 3
+
+            wicket_over = wickets > 0
+
+            # -----------------------------------------
+            # Timeline Record
+            # -----------------------------------------
+
+            timeline.append({
+
+                "innings": innings,
+
+                "team": team,
+
+                "over": over,
+
+                "phase": self.get_phase(over),
+
+                "runs": runs,
+
+                "wickets": wickets,
+
+                "boundaries": boundaries,
+
+                "sixes": sixes,
+
+                "dot_balls": dot_balls,
+
+                "extras": extras,
+
+                "balls": balls,
+
+                "cumulative_runs":
+                    cumulative_runs[innings],
+
+                "cumulative_wickets":
+                    cumulative_wickets[innings],
+
+                "run_rate": run_rate,
+
+                "momentum": momentum,
+
+                "explosive_over": explosive,
+
+                "pressure_over": pressure,
+
+                "wicket_over": wicket_over
+
+            })
+
+        timeline = pd.DataFrame(timeline)
+
+        # =============================================
+        # Momentum Delta
+        # =============================================
+
+        timeline["momentum_change"] = (
+
+            timeline
+            .groupby("innings")["momentum"]
+            .diff()
+            .fillna(0)
+
+        )
+
+        # =============================================
+        # Required by Drama Engine
+        # =============================================
+
+        timeline["big_shift"] = (
+
+            timeline["momentum_change"].abs() >= 10
+
+        )
+
+        return timeline

@@ -1,114 +1,267 @@
 """
 Momentum Engine
 ---------------
-Determines which team controlled each phase of the match.
+Calculates match momentum using the over-by-over timeline.
 """
+
+import pandas as pd
 
 
 class MomentumEngine:
 
-    def __init__(self, feature_team1, feature_team2):
+    def __init__(self, timeline_df: pd.DataFrame):
 
-        self.team1 = feature_team1
-        self.team2 = feature_team2
+        self.timeline = timeline_df.copy()
 
-    # -------------------------------------------------
-    # Compare one metric
-    # -------------------------------------------------
-
-    def compare(self, metric):
-
-        if self.team1[metric] > self.team2[metric]:
-            return "Team 1"
-
-        elif self.team2[metric] > self.team1[metric]:
-            return "Team 2"
-
-        return "Balanced"
-
-    # -------------------------------------------------
+    # =====================================================
     # Phase Winners
-    # -------------------------------------------------
+    # =====================================================
 
     def phase_winners(self):
 
-        return {
+        winners = {}
 
-            "powerplay":
-                self.compare("powerplay_runs"),
+        phase_mapping = {
+        "Powerplay": "powerplay",
+        "Middle Overs": "middle",
+        "Death Overs": "death"
+    }
 
-            "middle":
+        for phase, key in phase_mapping.items():
 
-                self.compare("middle_over_runs"),
+            phase_df = self.timeline[
+            self.timeline["phase"] == phase
+        ]
 
-            "death":
+            if phase_df.empty:
+                winners[key] = "Balanced"
+                continue
 
-                self.compare("death_over_runs")
-
-        }
-
-    # -------------------------------------------------
-    # Momentum Swings
-    # -------------------------------------------------
-
-    def momentum_swings(self):
-
-        winners = list(
-            self.phase_winners().values()
+            team_scores = (
+            phase_df
+            .groupby("team")["momentum"]
+            .sum()
         )
 
-        swings = 0
+            if len(team_scores) == 1:
+                winners[key] = team_scores.index[0]
+                continue
 
-        for i in range(1, len(winners)):
+            if team_scores.iloc[0] > team_scores.iloc[1]:
+                winners[key] = team_scores.index[0]
 
-            if winners[i] != winners[i - 1]:
+            elif team_scores.iloc[1] > team_scores.iloc[0]:
+                winners[key] = team_scores.index[1]
 
-                swings += 1
+            else:
+                winners[key] = "Balanced"
 
-        return swings
+        return winners
 
-    # -------------------------------------------------
-    # Dominating Team
-    # -------------------------------------------------
+    # =====================================================
+    # Calculate Momentum
+    # =====================================================
 
-    def dominating_team(self):
+    def calculate(self):
 
-        winners = self.phase_winners()
+        timeline = self.timeline.copy()
 
-        count = {
+        running = {}
 
-            "Team 1": 0,
+        momentum = []
 
-            "Team 2": 0,
+        turning_points = []
 
-            "Balanced": 0
+        previous_difference = None
 
-        }
+        previous_leader = None
 
-        for winner in winners.values():
+        momentum_swings = 0
 
-            count[winner] += 1
+        # -------------------------------------------------
+        # Running Momentum
+        # -------------------------------------------------
 
-        return max(
-            count,
-            key=count.get
+        for _, row in timeline.iterrows():
+
+            team = row["team"]
+
+            if team not in running:
+
+                running[team] = 0
+
+            running[team] += row["momentum"]
+
+            momentum.append(running[team])
+
+        timeline["running_momentum"] = momentum
+
+        # -------------------------------------------------
+        # Compare Teams
+        # -------------------------------------------------
+
+        teams = list(
+
+            timeline["team"].unique()
+
         )
 
-    # -------------------------------------------------
-    # Match Flow
-    # -------------------------------------------------
+        if len(teams) != 2:
 
-    def match_flow(self):
+            return {
+
+                "timeline": timeline,
+
+                "phase_winners": {},
+
+                "momentum_swings": 0,
+
+                "turning_points": [],
+
+                "dominating_team": "Unknown"
+
+            }
+
+        team1 = teams[0]
+
+        team2 = teams[1]
+
+        running1 = 0
+
+        running2 = 0
+
+        records = []
+
+        for _, row in timeline.iterrows():
+
+            if row["team"] == team1:
+
+                running1 = row["running_momentum"]
+
+            else:
+
+                running2 = row["running_momentum"]
+
+            difference = running1 - running2
+
+            if difference > 0:
+
+                leader = team1
+
+            elif difference < 0:
+
+                leader = team2
+
+            else:
+
+                leader = "Balanced"
+
+            # -----------------------------------------
+            # Momentum Swing
+            # -----------------------------------------
+
+            if previous_leader is not None:
+
+                if (
+
+                    leader != previous_leader
+
+                    and
+
+                    leader != "Balanced"
+
+                ):
+
+                    momentum_swings += 1
+
+                    turning_points.append({
+
+                        "innings": row["innings"],
+
+                        "over": row["over"],
+
+                        "team": leader,
+
+                        "reason": "Momentum Shift"
+
+                    })
+
+            # -----------------------------------------
+            # Big Momentum Shift
+            # -----------------------------------------
+
+            if previous_difference is not None:
+
+                if abs(
+
+                    difference - previous_difference
+
+                ) >= 15:
+
+                    turning_points.append({
+
+                        "innings": row["innings"],
+
+                        "over": row["over"],
+
+                        "team": row["team"],
+
+                        "reason": "Massive Momentum Swing"
+
+                    })
+
+            previous_difference = difference
+
+            previous_leader = leader
+
+            records.append({
+
+                "innings": row["innings"],
+
+                "team": row["team"],
+
+                "over": row["over"],
+
+                "runs": row["runs"],
+
+                "momentum": row["momentum"],
+
+                "running_momentum": row["running_momentum"],
+
+                "leader": leader
+
+            })
+
+        records = pd.DataFrame(records)
+
+        # -------------------------------------------------
+        # Dominating Team
+        # -------------------------------------------------
+
+        final_difference = running1 - running2
+
+        if final_difference > 0:
+
+            dominating = team1
+
+        elif final_difference < 0:
+
+            dominating = team2
+
+        else:
+
+            dominating = "Balanced"
 
         return {
 
-            "phase_winners":
-                self.phase_winners(),
+            "timeline": records,
 
-            "momentum_swings":
-                self.momentum_swings(),
+            "phase_winners": self.phase_winners(),
 
-            "dominating_team":
-                self.dominating_team()
+            "momentum_swings": momentum_swings,
+
+            "turning_points": turning_points,
+
+            "dominating_team": dominating
 
         }

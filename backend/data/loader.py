@@ -12,8 +12,8 @@ EXCEL_PATH = BASE_DIR / "IPL_Data.xlsx"
 # ========================================================
 # Load all sheets once
 # ========================================================
-
-_matches = pd.read_excel(EXCEL_PATH, sheet_name="Matches")
+CSV_PATH = BASE_DIR / "IPL_matches.csv"
+_matches = pd.read_csv(CSV_PATH)
 _matches.columns = _matches.columns.str.strip()
 
 print("Columns:")
@@ -72,28 +72,24 @@ def get_all_seasons():
 def get_matches(season):
 
     temp = _matches[
-        _matches["season"] == season
-    ].copy()
+    _matches["season"] == season
+].copy()
 
-    temp["match_name"] = (
-        temp["team1"] +
-        " vs " +
-        temp["team2"]
+    temp["display_name"] = (
+        temp["date"].astype(str)
+        + " | "
+        + temp["team1"]
+        + " vs "
+        + temp["team2"]
     )
 
-    return temp["match_name"].tolist()
+    return temp
 
 
-def get_match_details(season, match_name):
-
-    team1, team2 = match_name.split(" vs ")
+def get_match_details(match_id):
 
     row = _matches[
-        (_matches["season"] == season)
-        &
-        (_matches["team1"] == team1)
-        &
-        (_matches["team2"] == team2)
+        _matches["match_id"] == match_id
     ]
 
     if row.empty:
@@ -102,42 +98,19 @@ def get_match_details(season, match_name):
     row = row.iloc[0]
 
     return {
+        "match_id": row["match_id"],
+        "date": row["date"],
+        "season": row["season"],
+        "team1": row["team1"],
+        "team2": row["team2"],
+        "winner": row["winner"],
+        "venue": row["venue"],
+        "player_of_match": row["player_of_match"],
+        "toss_winner": row.get("toss_winner"),
+        "toss_decision": row.get("toss_decision"),
+        "result": row.get("result"),
+    }
 
-    "match_id": row["match_id"],
-
-    "match": match_name,
-
-    "date": row["date"],
-
-    "season": row["season"],
-
-    "venue": row["venue"],
-
-    "city": row.get("city", None),
-
-    "team1": row["team1"],
-
-    "team2": row["team2"],
-
-    "winner": row["winner"],
-
-    "player_of_match": row["player_of_match"],
-
-    "toss_winner": row.get("toss_winner", None),
-
-    "toss_decision": row.get("toss_decision", None),
-
-    "result": row.get("result", None),
-
-    "match_type": row.get("match_type", None),
-
-    "toss": (
-    f"{row.get('toss_winner', 'Unknown')} "
-    f"elected to "
-    f"{row.get('toss_decision', 'Unknown')}"
-)
-
-}
 
 # ========================================================
 # New Match Aura Functions
