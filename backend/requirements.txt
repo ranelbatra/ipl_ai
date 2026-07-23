@@ -1,0 +1,16 @@
+fastapi
+uvicorn
+pydantic
+pandas
+streamlit
+streamlit-option-menu
+plotly
+matplotlib
+numpy
+transformers
+torch
+huggingface-hub
+python-dotenv
+pytest
+pytest-cov
+httpx

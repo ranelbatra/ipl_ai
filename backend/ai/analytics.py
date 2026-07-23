@@ -39,12 +39,12 @@ def calculate_run_rates(match):
         ),
 
         "Middle Overs": (
-            match["middle"],
+            match["middleOvers"],
             MIDDLE_OVERS
         ),
 
         "Death Overs": (
-            match["death"],
+            match["deathOvers"],
             DEATH_OVERS
         )
 
@@ -89,11 +89,11 @@ def calculate_phase_winners(match):
     )
 
     winners["Middle Overs"] = compare_phase(
-        match["middle"]
+        match["middleOvers"]
     )
 
     winners["Death Overs"] = compare_phase(
-        match["death"]
+        match["deathOvers"]
     )
 
     return winners
@@ -148,9 +148,9 @@ def total_wickets(match):
 
         match["powerplay"],
 
-        match["middle"],
+        match["middleOvers"],
 
-        match["death"]
+        match["deathOvers"]
 
     ]:
 

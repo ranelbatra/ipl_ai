@@ -7,6 +7,10 @@ from data.loader import (
     get_match_deliveries
 )
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 from match_aura.aura_engine import MatchAuraEngine
 from match_aura.charts import MatchCharts
 from match_aura.chapters import ChapterGenerator
@@ -76,6 +80,9 @@ def match_aura():
     # ==========================================
     # LOAD MATCH
     # ==========================================
+    # ==========================================
+# LOAD MATCH
+# ==========================================
 
     match_details = get_match_details(match_id)
 
@@ -89,18 +96,44 @@ def match_aura():
         st.warning("No delivery data available for this match.")
         return
 
-    # ==========================================
-    # GENERATE MATCH AURA
-    # ==========================================
+# ==========================================
+# GENERATE MATCH AURA
+# ==========================================
 
-    engine = MatchAuraEngine(deliveries)
+    try:
 
-    aura = engine.generate()
+        with st.spinner("✨ Generating Match Aura..."):
+
+            engine = MatchAuraEngine(deliveries)
+            aura = engine.generate()
+
+    except Exception as e:
+
+        logger.exception("Match Aura generation failed")
+
+        st.error("⚠ Unable to generate Match Aura.")
+
+        st.warning(
+        """
+The Match Aura engine is temporarily unavailable.
+
+You can still explore the dashboard, players, teams, venues,
+statistics, and match information.
+"""
+    )
+
+        with st.expander("Technical Details"):
+            st.code(str(e))
+
+        if st.button("🔄 Retry Match Aura"):
+            st.rerun()
+
+        return
 
     timeline = aura.momentum_timeline
 
     chapters = ChapterGenerator(
-    aura.plot_twists
+        aura.plot_twists
 ).generate()
 
     rating = MatchRating.calculate(
@@ -173,25 +206,25 @@ def match_aura():
     c1, c2, c3, c4 = st.columns(4)
 
     with c1:
-        st.metric(
+            st.metric(
             "Aura Score",
             aura.aura_score
         )
 
     with c2:
-        st.metric(
+            st.metric(
             "Battle Meter",
             aura.battle_meter
         )
 
     with c3:
-        st.metric(
+            st.metric(
             "Hype Meter",
             aura.hype_meter
         )
 
     with c4:
-        st.metric(
+            st.metric(
     "Drama Score",
     aura.drama_score
 )
@@ -201,7 +234,7 @@ def match_aura():
     st.subheader("📈 Match Momentum")
 
     chart = MatchCharts.momentum_chart(
-    timeline["timeline"]
+        timeline["timeline"]
 )
 
     st.pyplot(chart)
@@ -227,26 +260,26 @@ def match_aura():
     c1, c2, c3 = st.columns(3)
 
     with c1:
-        st.metric("⚡ Powerplay", powerplay)
+            st.metric("⚡ Powerplay", powerplay)
 
     with c2:
-        st.metric("🏏 Middle Overs", middle)
+            st.metric("🏏 Middle Overs", middle)
 
     with c3:
-        st.metric("💥 Death Overs", death)
+            st.metric("💥 Death Overs", death)
 
     st.write("")
 
     c1, c2 = st.columns(2)
 
     with c1:
-        st.metric(
+            st.metric(
             "🔄 Momentum Swings",
             timeline["momentum_swings"]
         )
 
     with c2:
-        st.metric(
+            st.metric(
             "👑 Dominating Team",
             dominating
         )
@@ -341,3 +374,5 @@ def match_aura():
     st.subheader("🏁 Ending")
 
     st.write(aura.ending)
+
+    

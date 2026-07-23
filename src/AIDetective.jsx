@@ -16,33 +16,74 @@ function AIDetective() {
     });
 
     const [report, setReport] = useState("");
+    const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
 
     const handleChange = (e) => {
-        setMatchData({
-            ...matchData,
-            [e.target.name]: e.target.value
-        });
-    };
+
+    setError("");
+
+    setMatchData({
+        ...matchData,
+        [e.target.name]: e.target.value
+    });
+
+};
 
     const investigateMatch = async () => {
-        try {
-            setLoading(true);
 
-            const response = await axios.post(
-                "http://127.0.0.1:8000/investigate",
-                matchData
-            );
+    // Basic validation
+    if (
+        !matchData.team1 ||
+        !matchData.team2 ||
+        !matchData.winner
+    ) {
+        setError("Please fill in all required fields.");
+        return;
+    }
 
-            setReport(response.data.detective_report);
+    setLoading(true);
+    setError("");
+    setReport("");
 
-        } catch (error) {
-            console.log(error);
-            setReport("❌ Failed to generate detective report.");
-        } finally {
-            setLoading(false);
+    try {
+
+        const response = await axios.post(
+            "http://127.0.0.1:8000/investigate",
+            matchData,
+            {
+                timeout: 30000
+            }
+        );
+
+        setReport(response.data.report);
+
+    } catch (error) {
+
+        if (error.code === "ECONNABORTED") {
+
+            setError("⏳ The server took too long to respond.");
+
+        } else if (error.response) {
+
+            setError(error.response.data.detail || "Server error.");
+
+        } else if (error.request) {
+
+            setError("🔌 Unable to connect to the backend.");
+
+        } else {
+
+            setError("Something went wrong.");
         }
-    };
+
+    } finally {
+
+        setLoading(false);
+
+    }
+
+};
 
     return (
         <div className="detective-page">
@@ -127,15 +168,31 @@ function AIDetective() {
                     onChange={handleChange}
                 />
 
-                <button onClick={investigateMatch}>
-                    🔍 Investigate Match
+                <button onClick={investigateMatch} disabled={loading}>
+                {loading ? "Investigating..." : "🔍 Investigate Match"}
                 </button>
 
             </div>
 
             {loading && (
-                <p>⏳ AI is investigating the match...</p>
+                <div className="loading-box">
+    <p>🧠 AI is analyzing the match...</p>
+    <p>Please wait...</p>
+</div>
             )}
+
+            {
+    error && (
+        <div className="error-box">
+            <p>{error}</p>
+
+            <button onClick={investigateMatch}>
+                Retry
+            </button>
+
+        </div>
+    )
+}
 
             {report && (
                 <div className="report-box">

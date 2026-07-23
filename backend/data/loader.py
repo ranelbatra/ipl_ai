@@ -101,13 +101,25 @@ def get_match_details(match_id):
         "match_id": row["match_id"],
         "date": row["date"],
         "season": row["season"],
+
         "team1": row["team1"],
         "team2": row["team2"],
+
+        "match": f"{row['team1']} vs {row['team2']}",
+
         "winner": row["winner"],
         "venue": row["venue"],
         "player_of_match": row["player_of_match"],
+
         "toss_winner": row.get("toss_winner"),
         "toss_decision": row.get("toss_decision"),
+
+        # This is what your UI expects
+        "toss": (
+            f"{row.get('toss_winner', 'Unknown')} "
+            f"({row.get('toss_decision', 'Unknown')})"
+        ),
+
         "result": row.get("result"),
     }
 

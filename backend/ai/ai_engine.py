@@ -74,10 +74,10 @@ Powerplay
 {match["powerplay"]}
 
 Middle Overs
-{match["middle"]}
+{match["middleOvers"]}
 
 Death Overs
-{match["death"]}
+{match["deathOvers"]}
 
 ------------------------------------------------
 ANALYTICS

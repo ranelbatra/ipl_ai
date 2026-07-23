@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from backend.ai.ai_engine import generate_report
-from backend.loader import get_match_deliveries
+from backend.data.loader import get_match_deliveries
 from backend.match_aura.aura_engine import MatchAuraEngine
 
 app = FastAPI()
@@ -40,19 +40,47 @@ def overview():
         "venues": 62
     }
 
+from fastapi import HTTPException
+import logging
+
+logger = logging.getLogger(__name__)
+
 @app.post("/investigate")
-def investigate_match(request: MatchRequest):
+def investigate(request: MatchRequest):
     try:
-        report = generate_report(request)
+        report = generate_report(request.model_dump())
 
-        return {
-            "detective_report": report
-        }
+        if not report:
+            raise HTTPException(
+                status_code=404,
+                detail="Unable to generate match report."
+            )
 
-    except Exception as e:
-        return {
-            "error": str(e)
-        }
+        return {"report": report}
+
+    except HTTPException:
+        raise
+
+    except FileNotFoundError:
+        logger.exception("Dataset not found")
+        raise HTTPException(
+            status_code=500,
+            detail="Required dataset is missing."
+        )
+
+    except ValueError as e:
+        logger.exception(e)
+        raise HTTPException(
+            status_code=400,
+            detail=str(e)
+        )
+
+    except Exception:
+        logger.exception("Unexpected error while generating report")
+        raise HTTPException(
+            status_code=500,
+            detail="Unexpected server error. Please try again."
+        )
 
 @app.get("/match-aura/{match_id}")
 def get_match_aura(match_id: int):
@@ -62,10 +90,10 @@ def get_match_aura(match_id: int):
         deliveries = get_match_deliveries(match_id)
 
         if deliveries.empty:
-
-            return {
-                "error": "Match not found."
-            }
+            raise HTTPException(
+                status_code=404,
+                detail="Match not found."
+            )
 
         engine = MatchAuraEngine(deliveries)
 
@@ -73,8 +101,13 @@ def get_match_aura(match_id: int):
 
         return aura.model_dump()
 
-    except Exception as e:
+    except HTTPException:
+        raise
 
-        return {
-            "error": str(e)
-        }
+    except Exception:
+        logger.exception("Error generating Match Aura")
+
+        raise HTTPException(
+            status_code=500,
+            detail="Unable to generate Match Aura."
+        )
