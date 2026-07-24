@@ -74,6 +74,60 @@ class MatchAuraEngine:
         ).extract_all_features()
 
         # -------------------------------------------------
+# Phase Statistics
+# -------------------------------------------------
+
+                # -------------------------------------------------
+        # Phase Statistics
+        # -------------------------------------------------
+
+        phase_stats = {
+
+            "powerplay": {
+
+                "team1": {
+                    "runs": team1["powerplay_runs"],
+                    "wickets": team1["powerplay_wickets"]
+                },
+
+                "team2": {
+                    "runs": team2["powerplay_runs"],
+                    "wickets": team2["powerplay_wickets"]
+                }
+
+            },
+
+            "middle": {
+
+                "team1": {
+                    "runs": team1["middle_over_runs"],
+                    "wickets": team1["middle_over_wickets"]
+                },
+
+                "team2": {
+                    "runs": team2["middle_over_runs"],
+                    "wickets": team2["middle_over_wickets"]
+                }
+
+            },
+
+            "death": {
+
+                "team1": {
+                    "runs": team1["death_over_runs"],
+                    "wickets": team1["death_over_wickets"]
+                },
+
+                "team2": {
+                    "runs": team2["death_over_runs"],
+                    "wickets": team2["death_over_wickets"]
+                }
+
+            }
+
+        }
+
+        # -------------------------------------------------
         # Timeline
         # -------------------------------------------------
 
@@ -308,6 +362,8 @@ class MatchAuraEngine:
             hype_meter=hype_meter,
 
             drama_score=drama["drama_score"],
+
+            phase_stats=phase_stats,
 
             momentum_timeline={
 

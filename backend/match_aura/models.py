@@ -17,6 +17,8 @@ class MatchAura(BaseModel):
 
     drama_score: int
 
+    phase_stats: dict
+
     momentum_timeline: dict
 
     plot_twists: list
@@ -28,3 +30,4 @@ class MatchAura(BaseModel):
     ai_verdict: str
 
     ending: str
+    

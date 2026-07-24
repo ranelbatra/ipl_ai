@@ -290,30 +290,6 @@ statistics, and match information.
     # PLOT TWISTS
     # ==========================================
 
-    st.subheader("🌪 Match Events")
-
-    for event in aura.plot_twists:
-
-        if event["severity"] == "High":
-
-            st.error(
-            f"🔥 {event['type']}\n\n{event['description']}"
-        )
-
-        elif event["severity"] == "Medium":
-
-            st.warning(
-            f"⚠ {event['type']}\n\n{event['description']}"
-        )
-
-        else:
-
-            st.info(
-            f"ℹ {event['type']}\n\n{event['description']}"
-        )
-
-    st.divider()
-
     st.subheader("🎬 Match Chapters")
 
     for chapter in chapters:

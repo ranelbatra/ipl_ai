@@ -295,13 +295,45 @@ class MatchFeatureExtractor:
         # Match Phases
         # -------------------------
 
-            "powerplay_runs": self.powerplay_runs(),
-            "middle_over_runs": self.middle_over_runs(),
-            "death_over_runs": self.death_over_runs(),
+            # -------------------------
+# Match Phases
+# -------------------------
 
-            "powerplay_wickets": self.powerplay_wickets(),
-            "middle_over_wickets": self.middle_over_wickets(),
-            "death_over_wickets": self.death_over_wickets(),
+"powerplay_runs": self.powerplay_runs(),
+"middle_over_runs": self.middle_over_runs(),
+"death_over_runs": self.death_over_runs(),
+
+"powerplay_wickets": self.powerplay_wickets(),
+"middle_over_wickets": self.middle_over_wickets(),
+"death_over_wickets": self.death_over_wickets(),
+
+"phase_stats": {
+
+    "powerplay": {
+
+        "runs": self.powerplay_runs(),
+
+        "wickets": self.powerplay_wickets()
+
+    },
+
+    "middle": {
+
+        "runs": self.middle_over_runs(),
+
+        "wickets": self.middle_over_wickets()
+
+    },
+
+    "death": {
+
+        "runs": self.death_over_runs(),
+
+        "wickets": self.death_over_wickets()
+
+    }
+
+},
 
         # -------------------------
         # Highlights

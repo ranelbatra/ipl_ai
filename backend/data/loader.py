@@ -57,6 +57,12 @@ def get_all_matches():
 def load_data():
     return get_all_matches()
 
+def load_deliveries():
+    """
+    Returns the complete ball-by-ball deliveries dataset.
+    """
+    return _deliveries.copy()
+
 
 def get_all_seasons():
     seasons = (
@@ -216,8 +222,3 @@ if __name__ == "__main__":
 
     print(get_all_seasons()[:5])
 
-from data.loader import get_team_players
-
-df = get_team_players("Mumbai Indians")
-
-print(df[["player", "runs", "wickets"]])
