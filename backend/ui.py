@@ -2,6 +2,7 @@ import streamlit as st
 from streamlit_option_menu import option_menu
 import streamlit.components.v1 as components
 from ai.ai_engine import generate_report
+from pages.cricket_comparison import cricket_comparison
 import traceback
 from pages.players import show_players
 from pages.matches import show_matches
@@ -11,6 +12,8 @@ from pages.statistics import show_statistics
 from pages.ai_detective import ai_detective
 from pages.match_aura import match_aura
 from pages.dashboard import show_dashboard
+from pages.ai_match_coach import ai_match_coach
+from pages.ai_assistant import ai_assistant
 
 st.set_page_config(layout="wide")
 
@@ -36,7 +39,10 @@ selected = option_menu(
         "Venues",
         "Statistics",
         "AI Detective",
-        "Match Aura"
+        "Match Aura",
+        "AI Match Coach",
+        "Cricket Comparison Studio",
+        "AI Cricket Assistant"
     ],
     icons=[
         "house",
@@ -45,7 +51,8 @@ selected = option_menu(
         "trophy",
         "geo-alt",
         "bar-chart",
-        "robot"
+        "robot",
+        "clipboard2-check"
     ],
     orientation="horizontal",
 
@@ -107,3 +114,13 @@ elif selected == "AI Detective":
 elif selected == "Match Aura":
 
     match_aura()
+
+elif selected == "AI Match Coach":
+
+    ai_match_coach()
+
+elif selected == "Cricket Comparison Studio":
+    cricket_comparison()
+
+elif selected == "AI Cricket Assistant":
+    ai_assistant()

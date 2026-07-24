@@ -11,7 +11,7 @@ Central analytics layer for:
 
 """
 
-from team_mapping import normalize_team
+from ai_assistant.team_mapping import normalize_team
 
 class CricketAnalytics:
 
